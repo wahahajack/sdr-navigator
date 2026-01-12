@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NatureType, PuzzleKey, PUZZLE_META } from '@/lib/sdrData';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,6 +55,18 @@ const IntelligenceAudit = ({
       onCustomerInfoChange('channels', [...current, channel]);
     }
   };
+
+  // Auto-detect entry type based on first message content
+  useEffect(() => {
+    const msg = customerInfo.firstMessage.toLowerCase();
+    if (msg.includes('distributor') && msg.includes('application')) {
+      onNatureChange('high');
+    } else if (msg.includes('download') && msg.includes('catalog')) {
+      onNatureChange('interested');
+    } else if (msg.includes('interest')) {
+      onNatureChange('eval');
+    }
+  }, [customerInfo.firstMessage, onNatureChange]);
 
   return (
     <div className="sdr-panel flex-none space-y-4">

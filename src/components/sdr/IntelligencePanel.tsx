@@ -29,9 +29,12 @@ const IntelligencePanel = ({
     toast.success('Copied to clipboard');
   };
 
-  const shareBriefing = (method: 'WA' | 'Email') => {
+  const sendToAE = () => {
     copyToClipboard(briefing);
-    toast.success(`Intel ready for ${selectedAE} by ${method}`);
+    const aeInfo = AE_DATA[selectedAE];
+    toast.success(`Intel sent to ${selectedAE} via WhatsApp & Email`, {
+      description: `WA: ${aeInfo.wa} | Email: ${aeInfo.email}`
+    });
   };
 
   const score = (puzzleCount / 5) * 100;
@@ -133,18 +136,12 @@ const IntelligencePanel = ({
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-1">
+            <div className="pt-1">
               <button 
-                onClick={() => shareBriefing('WA')}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-[9px] font-black py-2.5 rounded-lg uppercase tracking-tighter shadow-md active:scale-95 transition-all"
+                onClick={sendToAE}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-black py-3 rounded-lg uppercase tracking-widest shadow-md active:scale-95 transition-all"
               >
-                Send BY WA
-              </button>
-              <button 
-                onClick={() => shareBriefing('Email')}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground text-[9px] font-black py-2.5 rounded-lg uppercase tracking-tighter shadow-md active:scale-95 transition-all"
-              >
-                Send BY Email
+                Send to AE
               </button>
             </div>
           </div>
