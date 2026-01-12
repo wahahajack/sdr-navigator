@@ -1,6 +1,8 @@
 import { NatureType, PuzzleKey, PUZZLE_META } from '@/lib/sdrData';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { CustomerInfo, LIECSData } from '@/hooks/useSDRState';
+import { Mail, MessageCircle } from 'lucide-react';
 
 interface IntelligenceAuditProps {
   nature: NatureType;
@@ -9,7 +11,7 @@ interface IntelligenceAuditProps {
   selectedPuzzle: PuzzleKey | null;
   puzzleCount: number;
   onNatureChange: (nature: NatureType) => void;
-  onCustomerInfoChange: (field: keyof CustomerInfo, value: string) => void;
+  onCustomerInfoChange: (field: keyof CustomerInfo, value: string | ('email' | 'whatsapp')[]) => void;
   onLIECSChange: (key: PuzzleKey, value: string) => void;
   onSelectPuzzle: (key: PuzzleKey | null) => void;
 }
@@ -43,6 +45,15 @@ const IntelligenceAudit = ({
   onSelectPuzzle
 }: IntelligenceAuditProps) => {
   const selectedMeta = selectedPuzzle ? PUZZLE_META[selectedPuzzle] : null;
+
+  const toggleChannel = (channel: 'email' | 'whatsapp') => {
+    const current = customerInfo.channels;
+    if (current.includes(channel)) {
+      onCustomerInfoChange('channels', current.filter(c => c !== channel));
+    } else {
+      onCustomerInfoChange('channels', [...current, channel]);
+    }
+  };
 
   return (
     <div className="sdr-panel flex-none space-y-4">
@@ -101,31 +112,44 @@ const IntelligenceAudit = ({
         </div>
       </div>
 
-      {/* Entry Type - Horizontal (below contact info) */}
+      {/* Communication Channel Selection */}
       <div className="space-y-1.5">
-        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Entry Type</p>
+        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Communication Channel</p>
         <div className="flex gap-2">
-          {NATURE_OPTIONS.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => onNatureChange(option.id)}
-              className={`flex-1 py-1.5 px-2 rounded-lg border-2 transition-all text-center ${
-                nature === option.id 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-border hover:border-accent/50'
-              }`}
-            >
-              <span className={`text-[7px] font-black px-1 py-0.5 rounded ${option.gradeColor}`}>
-                {option.grade}
-              </span>
-              <div className={`text-[9px] font-bold uppercase mt-0.5 ${
-                nature === option.id ? 'text-primary' : 'text-foreground'
-              }`}>
-                {option.label}
-              </div>
-            </button>
-          ))}
+          <button
+            onClick={() => toggleChannel('email')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+              customerInfo.channels.includes('email')
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border hover:border-accent/50 text-muted-foreground'
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase">Email</span>
+          </button>
+          <button
+            onClick={() => toggleChannel('whatsapp')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+              customerInfo.channels.includes('whatsapp')
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border hover:border-accent/50 text-muted-foreground'
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="text-[10px] font-bold uppercase">WhatsApp</span>
+          </button>
         </div>
+      </div>
+
+      {/* Customer First Message */}
+      <div className="space-y-1.5">
+        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Customer's First Message</p>
+        <Textarea
+          value={customerInfo.firstMessage}
+          onChange={(e) => onCustomerInfoChange('firstMessage', e.target.value)}
+          placeholder="Paste or type the customer's initial message here..."
+          className="w-full px-2 py-1.5 bg-muted/20 border-border text-[10px] min-h-[60px] resize-none"
+        />
       </div>
 
       {/* LIECS Puzzle Tiles with Input Fields */}
@@ -191,6 +215,33 @@ const IntelligenceAudit = ({
           </div>
         </div>
       )}
+
+      {/* Entry Type - Horizontal (below LIECS) */}
+      <div className="space-y-1.5">
+        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Entry Type</p>
+        <div className="flex gap-2">
+          {NATURE_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => onNatureChange(option.id)}
+              className={`flex-1 py-1.5 px-2 rounded-lg border-2 transition-all text-center ${
+                nature === option.id 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-border hover:border-accent/50'
+              }`}
+            >
+              <span className={`text-[7px] font-black px-1 py-0.5 rounded ${option.gradeColor}`}>
+                {option.grade}
+              </span>
+              <div className={`text-[9px] font-bold uppercase mt-0.5 ${
+                nature === option.id ? 'text-primary' : 'text-foreground'
+              }`}>
+                {option.label}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
