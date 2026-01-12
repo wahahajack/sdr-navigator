@@ -53,8 +53,8 @@ const IntelligencePanel = ({
   };
 
   return (
-    <section className="col-span-12 lg:col-span-3 flex flex-col space-y-3 h-full overflow-hidden">
-      <div className={`sdr-panel flex flex-col h-full overflow-y-auto custom-scroll transition-all duration-500 relative ${confirmed ? 'confirmed-panel' : ''}`}>
+    <section className="col-span-12 lg:col-span-3 flex flex-col space-y-3">
+      <div className={`sdr-panel flex flex-col transition-all duration-500 relative ${confirmed ? 'confirmed-panel' : ''}`}>
         <h2 className="sdr-label-accent mb-3 border-b border-border pb-2">
           05. Intelligence & Execution
         </h2>
