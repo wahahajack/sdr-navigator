@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { ConversationNode, SPECIAL_SCRIPTS, Reply } from '@/lib/sdrData';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 interface ChatSimulationProps {
   round: number;
@@ -20,6 +22,8 @@ const ChatSimulation = ({
   onReset,
   onConfirm
 }: ChatSimulationProps) => {
+  const [customResponse, setCustomResponse] = useState('');
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard');
@@ -35,6 +39,15 @@ const ChatSimulation = ({
     onReply(reply.next);
   };
 
+  const handleCustomReply = () => {
+    if (customResponse.trim()) {
+      onAddHistory(`[Customer]: ${customResponse}`);
+      setCustomResponse('');
+      // Continue to next generic branch
+      onReply('custom_response');
+    }
+  };
+
   const handleScriptClick = () => {
     copyToClipboard(script);
     if (!script.includes('[SDR Step')) {
@@ -48,6 +61,9 @@ const ChatSimulation = ({
       className={`w-1.5 h-1.5 rounded-full ${i < round ? 'bg-primary' : 'bg-muted/30'}`}
     />
   ));
+
+  // Show only first 3 preset replies, 4th slot is for custom input
+  const presetReplies = dialogue?.replies?.slice(0, 3) || [];
 
   return (
     <div className="sdr-panel flex flex-col relative p-0 min-h-[500px]">
@@ -117,13 +133,13 @@ const ChatSimulation = ({
           </div>
 
           {/* Response Options */}
-          {dialogue?.replies && dialogue.replies.length > 0 && (
+          {(presetReplies.length > 0 || dialogue?.replies) && (
             <div className="space-y-2 pt-2 border-t border-border/50">
               <p className="text-[9px] font-bold text-muted-foreground uppercase px-1 tracking-widest">
                 Branching: Customer Responses (4 Slots)
               </p>
               <div className="grid grid-cols-2 gap-2">
-                {dialogue.replies.map((reply, index) => (
+                {presetReplies.map((reply, index) => (
                   <button
                     key={index}
                     onClick={() => handleReplyClick(reply)}
@@ -137,6 +153,26 @@ const ChatSimulation = ({
                     </span>
                   </button>
                 ))}
+                {/* Custom Input Slot */}
+                <div className="response-btn flex flex-col items-stretch p-2">
+                  <Input
+                    type="text"
+                    value={customResponse}
+                    onChange={(e) => setCustomResponse(e.target.value)}
+                    placeholder="Type custom response..."
+                    className="w-full px-2 py-1 bg-card border-border text-[10px] h-auto mb-1.5"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleCustomReply();
+                    }}
+                  />
+                  <button
+                    onClick={handleCustomReply}
+                    disabled={!customResponse.trim()}
+                    className="text-[8px] text-accent font-black uppercase tracking-tighter hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Submit Custom &gt;
+                  </button>
+                </div>
               </div>
             </div>
           )}

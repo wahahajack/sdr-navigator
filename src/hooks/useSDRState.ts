@@ -14,6 +14,8 @@ export interface CustomerInfo {
   company: string;
   email: string;
   wa: string;
+  firstMessage: string;
+  channels: ('email' | 'whatsapp')[];
 }
 
 export interface LIECSData {
@@ -40,7 +42,9 @@ const initialCustomerInfo: CustomerInfo = {
   name: '',
   company: '',
   email: '',
-  wa: ''
+  wa: '',
+  firstMessage: '',
+  channels: []
 };
 
 const initialLIECSData: LIECSData = {
@@ -90,7 +94,7 @@ export function useSDRState() {
     setState(prev => ({ ...prev, selectedPuzzle: key }));
   }, []);
 
-  const updateCustomerInfo = useCallback((field: keyof CustomerInfo, value: string) => {
+  const updateCustomerInfo = useCallback((field: keyof CustomerInfo, value: string | ('email' | 'whatsapp')[]) => {
     setState(prev => ({
       ...prev,
       customerInfo: { ...prev.customerInfo, [field]: value }
@@ -204,6 +208,8 @@ export function useSDRState() {
     text += `- Company: ${state.customerInfo.company || 'N/A'}\n`;
     text += `- Email: ${state.customerInfo.email || 'N/A'}\n`;
     text += `- WhatsApp: ${state.customerInfo.wa || 'N/A'}\n`;
+    text += `- Channels: ${state.customerInfo.channels.length > 0 ? state.customerInfo.channels.join(', ').toUpperCase() : 'N/A'}\n`;
+    text += `- First Message: ${state.customerInfo.firstMessage || 'N/A'}\n`;
     text += `- Entry Type: ${state.nature.toUpperCase()}\n`;
     text += `------------------------------------\n`;
     text += `LIECS AUDIT:\n`;
