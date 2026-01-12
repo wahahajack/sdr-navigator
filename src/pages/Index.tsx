@@ -1,6 +1,5 @@
 import Header from '@/components/sdr/Header';
-import LeadNaturePanel from '@/components/sdr/LeadNaturePanel';
-import PuzzleAudit from '@/components/sdr/PuzzleAudit';
+import IntelligenceAudit from '@/components/sdr/IntelligenceAudit';
 import ChatSimulation from '@/components/sdr/ChatSimulation';
 import IntelligencePanel from '@/components/sdr/IntelligencePanel';
 import { useSDRState } from '@/hooks/useSDRState';
@@ -9,7 +8,7 @@ const Index = () => {
   const {
     state,
     updateNature,
-    togglePuzzle,
+    updateLIECSField,
     selectPuzzle,
     updateCustomerInfo,
     handleReply,
@@ -33,22 +32,18 @@ const Index = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-3 grid grid-cols-12 gap-4">
-        {/* Left Panel - Lead Nature */}
-        <LeadNaturePanel
-          nature={state.nature}
-          customerInfo={state.customerInfo}
-          onNatureChange={updateNature}
-          onCustomerInfoChange={updateCustomerInfo}
-        />
-
-        {/* Center Panel - Puzzle & Chat */}
-        <section className="col-span-12 md:col-span-9 lg:col-span-7 flex flex-col space-y-3 overflow-hidden">
-          <PuzzleAudit
-            puzzles={state.puzzles}
+        {/* Main Panel - Intelligence Audit + Chat */}
+        <section className="col-span-12 lg:col-span-9 flex flex-col space-y-3">
+          <IntelligenceAudit
+            nature={state.nature}
+            customerInfo={state.customerInfo}
+            liecsData={state.liecsData}
             selectedPuzzle={state.selectedPuzzle}
-            onToggle={togglePuzzle}
-            onSelect={selectPuzzle}
             puzzleCount={puzzleCount}
+            onNatureChange={updateNature}
+            onCustomerInfoChange={updateCustomerInfo}
+            onLIECSChange={updateLIECSField}
+            onSelectPuzzle={selectPuzzle}
           />
           
           <ChatSimulation

@@ -9,39 +9,56 @@ import {
   ConversationNode
 } from '@/lib/sdrData';
 
+export interface CustomerInfo {
+  name: string;
+  company: string;
+  email: string;
+  wa: string;
+}
+
+export interface LIECSData {
+  L: string; // Location/Country
+  I: string; // Identity/Business Mode
+  E: string; // Experience
+  C: string; // Channel
+  S: string; // Stage
+}
+
 export interface SDRState {
   nature: NatureType;
   round: number;
   node: string;
-  puzzles: Record<PuzzleKey, boolean>;
+  customerInfo: CustomerInfo;
+  liecsData: LIECSData;
   confirmed: boolean;
   history: string[];
-  customerInfo: {
-    email: string;
-    wa: string;
-    loc: string;
-    iden: string;
-  };
   selectedPuzzle: PuzzleKey | null;
   finishType: string | null;
 }
 
-const initialPuzzles: Record<PuzzleKey, boolean> = {
-  L: false,
-  I: false,
-  E: false,
-  C: false,
-  S: false
+const initialCustomerInfo: CustomerInfo = {
+  name: '',
+  company: '',
+  email: '',
+  wa: ''
+};
+
+const initialLIECSData: LIECSData = {
+  L: '',
+  I: '',
+  E: '',
+  C: '',
+  S: ''
 };
 
 const initialState: SDRState = {
   nature: 'high',
   round: 1,
   node: 'r1',
-  puzzles: { ...initialPuzzles, L: true, I: true },
+  customerInfo: initialCustomerInfo,
+  liecsData: initialLIECSData,
   confirmed: false,
   history: [],
-  customerInfo: { email: '', wa: '', loc: '', iden: '' },
   selectedPuzzle: null,
   finishType: null
 };
@@ -50,18 +67,11 @@ export function useSDRState() {
   const [state, setState] = useState<SDRState>(initialState);
 
   const updateNature = useCallback((nature: NatureType) => {
-    const autoPuzzles = NATURE_AUTO_MAP[nature];
-    const newPuzzles = { ...initialPuzzles };
-    autoPuzzles.forEach(key => {
-      newPuzzles[key] = true;
-    });
-    
     setState(prev => ({
       ...prev,
       nature,
       round: 1,
       node: 'r1',
-      puzzles: newPuzzles,
       confirmed: false,
       history: [],
       selectedPuzzle: null,
@@ -69,10 +79,10 @@ export function useSDRState() {
     }));
   }, []);
 
-  const togglePuzzle = useCallback((key: PuzzleKey, value: boolean) => {
+  const updateLIECSField = useCallback((key: PuzzleKey, value: string) => {
     setState(prev => ({
       ...prev,
-      puzzles: { ...prev.puzzles, [key]: value }
+      liecsData: { ...prev.liecsData, [key]: value }
     }));
   }, []);
 
@@ -80,7 +90,7 @@ export function useSDRState() {
     setState(prev => ({ ...prev, selectedPuzzle: key }));
   }, []);
 
-  const updateCustomerInfo = useCallback((field: keyof SDRState['customerInfo'], value: string) => {
+  const updateCustomerInfo = useCallback((field: keyof CustomerInfo, value: string) => {
     setState(prev => ({
       ...prev,
       customerInfo: { ...prev.customerInfo, [field]: value }
@@ -114,8 +124,16 @@ export function useSDRState() {
   }, []);
 
   const resetFlow = useCallback(() => {
-    updateNature(state.nature);
-  }, [state.nature, updateNature]);
+    setState(prev => ({
+      ...prev,
+      round: 1,
+      node: 'r1',
+      confirmed: false,
+      history: [],
+      selectedPuzzle: null,
+      finishType: null
+    }));
+  }, []);
 
   const getCurrentDialogue = useCallback((): ConversationNode | null => {
     if (state.node === 'r1') {
@@ -131,17 +149,25 @@ export function useSDRState() {
   const getScript = useCallback((dialogue: ConversationNode | null): string => {
     if (!dialogue) return '';
     if (dialogue.script_gen) {
-      return dialogue.script_gen(state.puzzles, {
-        loc: state.customerInfo.loc,
-        iden: state.customerInfo.iden
+      // Create puzzles object from liecsData for compatibility
+      const puzzles: Record<PuzzleKey, boolean> = {
+        L: !!state.liecsData.L,
+        I: !!state.liecsData.I,
+        E: !!state.liecsData.E,
+        C: !!state.liecsData.C,
+        S: !!state.liecsData.S
+      };
+      return dialogue.script_gen(puzzles, {
+        loc: state.liecsData.L,
+        iden: state.liecsData.I
       });
     }
     return dialogue.script || '';
-  }, [state.puzzles, state.customerInfo]);
+  }, [state.liecsData]);
 
   const getPuzzleCount = useCallback(() => {
-    return Object.values(state.puzzles).filter(Boolean).length;
-  }, [state.puzzles]);
+    return Object.values(state.liecsData).filter(v => v.trim() !== '').length;
+  }, [state.liecsData]);
 
   const getGrade = useCallback(() => {
     const count = getPuzzleCount();
@@ -173,19 +199,19 @@ export function useSDRState() {
   const generateBriefing = useCallback((aeName: string) => {
     let text = `[TEYES SDR INTELLIGENCE BRIEFING]\n`;
     text += `====================================\n`;
-    text += `IDENTITY:\n`;
+    text += `CONTACT INFO:\n`;
+    text += `- Name: ${state.customerInfo.name || 'N/A'}\n`;
+    text += `- Company: ${state.customerInfo.company || 'N/A'}\n`;
     text += `- Email: ${state.customerInfo.email || 'N/A'}\n`;
     text += `- WhatsApp: ${state.customerInfo.wa || 'N/A'}\n`;
-    text += `- Entry: ${state.nature.toUpperCase()}\n`;
-    text += `------------------------------------\n`;
-    text += `PRE-FILLED DATA:\n`;
-    text += `- Form Loc: ${state.customerInfo.loc || 'EMPTY'}\n`;
-    text += `- Form Iden: ${state.customerInfo.iden || 'EMPTY'}\n`;
+    text += `- Entry Type: ${state.nature.toUpperCase()}\n`;
     text += `------------------------------------\n`;
     text += `LIECS AUDIT:\n`;
-    (Object.keys(state.puzzles) as PuzzleKey[]).forEach(k => {
-      text += `[${state.puzzles[k] ? 'X' : ' '}] ${PUZZLE_META[k].title}\n`;
-    });
+    text += `- [L] Location: ${state.liecsData.L || 'EMPTY'}\n`;
+    text += `- [I] Identity: ${state.liecsData.I || 'EMPTY'}\n`;
+    text += `- [E] Experience: ${state.liecsData.E || 'EMPTY'}\n`;
+    text += `- [C] Channel: ${state.liecsData.C || 'EMPTY'}\n`;
+    text += `- [S] Stage: ${state.liecsData.S || 'EMPTY'}\n`;
     text += `------------------------------------\n`;
     text += `CHAT TRACE LOG:\n`;
     state.history.forEach(line => text += line + `\n`);
@@ -197,7 +223,7 @@ export function useSDRState() {
   return {
     state,
     updateNature,
-    togglePuzzle,
+    updateLIECSField,
     selectPuzzle,
     updateCustomerInfo,
     handleReply,
