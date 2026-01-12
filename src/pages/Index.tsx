@@ -29,10 +29,10 @@ const Index = () => {
   const grade = getGrade();
 
   return (
-    <div className="bg-background text-foreground h-screen flex flex-col overflow-hidden font-sans text-[13px]">
+    <div className="bg-background text-foreground min-h-screen flex flex-col font-sans text-[13px]">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-3 grid grid-cols-12 gap-4 overflow-hidden h-full">
+      <main className="flex-1 container mx-auto px-4 py-3 grid grid-cols-12 gap-4">
         {/* Left Panel - Lead Nature */}
         <LeadNaturePanel
           nature={state.nature}

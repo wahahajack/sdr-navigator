@@ -50,7 +50,7 @@ const ChatSimulation = ({
   ));
 
   return (
-    <div className="sdr-panel flex-1 flex flex-col overflow-hidden relative p-0">
+    <div className="sdr-panel flex flex-col relative p-0 min-h-[500px]">
       {/* Header */}
       <div className="px-5 py-2.5 bg-muted/10 border-b border-border flex justify-between items-center">
         <h2 className="sdr-label italic">04. WhatsApp Chat Simulation</h2>

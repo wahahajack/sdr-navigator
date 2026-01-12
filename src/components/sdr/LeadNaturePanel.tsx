@@ -27,7 +27,7 @@ const LeadNaturePanel = ({
   onCustomerInfoChange 
 }: LeadNaturePanelProps) => {
   return (
-    <section className="col-span-12 md:col-span-3 lg:col-span-2 flex flex-col space-y-3 h-full overflow-y-auto custom-scroll pr-1">
+    <section className="col-span-12 md:col-span-3 lg:col-span-2 flex flex-col space-y-3 pr-1">
       {/* Identity & Form Data */}
       <div className="sdr-panel">
         <h2 className="sdr-label-accent mb-2 italic">01. Identity & Form Data</h2>
