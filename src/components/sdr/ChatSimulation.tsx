@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ConversationNode, SPECIAL_SCRIPTS, Reply } from '@/lib/sdrData';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { Clock, MessageSquareX } from 'lucide-react';
 
 interface ChatSimulationProps {
   round: number;
@@ -50,9 +51,22 @@ const ChatSimulation = ({
 
   const handleScriptClick = () => {
     copyToClipboard(script);
-    if (!script.includes('[SDR Step')) {
-      onAddHistory(`[SDR Step ${round}]: ${script}`);
-    }
+    // Always log SDR message to history
+    onAddHistory(`[SDR]: ${script}`);
+  };
+
+  const handleNoReplyFollowup = () => {
+    const text = SPECIAL_SCRIPTS['No Response']?.replace('[Name]', '[Customer Name]') || '';
+    copyToClipboard(text);
+    onAddHistory(`[SDR - No Reply Follow-up]: ${text}`);
+    toast.success('No Reply Follow-up script copied & logged');
+  };
+
+  const handleTimezoneAlert = () => {
+    const text = SPECIAL_SCRIPTS['Timezone']?.replace('[Name]', '[Customer Name]') || '';
+    copyToClipboard(text);
+    onAddHistory(`[SDR - Timezone Alert]: ${text}`);
+    toast.info('⏰ Timezone Alert: Reminder set - follow up when AE is online');
   };
 
   const roundDots = Array(4).fill(null).map((_, i) => (
@@ -83,29 +97,13 @@ const ChatSimulation = ({
       {/* Chat Area */}
       <div className="flex-1 flex flex-col overflow-hidden bg-muted/5">
         {/* Thinking Area */}
-        <div className="p-2.5 bg-card border-b border-border shadow-sm flex justify-between items-start">
-          <div>
-            <p className="text-[8px] font-bold text-accent uppercase mb-0.5 tracking-widest">
-              Internal Mindset
-            </p>
-            <p className="text-[11px] text-foreground font-medium italic">
-              {dialogue?.thinking}
-            </p>
-          </div>
-          <div className="flex flex-col space-y-1">
-            <button 
-              onClick={() => copySpecial('No Response')}
-              className="text-[8px] bg-warning/20 text-warning px-2 py-0.5 rounded font-black border border-warning/30 hover:bg-warning/30 transition-all uppercase"
-            >
-              No Reply Follow-up
-            </button>
-            <button 
-              onClick={() => copySpecial('Timezone')}
-              className="text-[8px] bg-accent/20 text-accent px-2 py-0.5 rounded font-black border border-accent/30 hover:bg-accent/30 transition-all uppercase"
-            >
-              Timezone Alert
-            </button>
-          </div>
+        <div className="p-2.5 bg-card border-b border-border shadow-sm">
+          <p className="text-[8px] font-bold text-accent uppercase mb-0.5 tracking-widest">
+            Internal Mindset
+          </p>
+          <p className="text-[11px] text-foreground font-medium italic">
+            {dialogue?.thinking}
+          </p>
         </div>
 
         {/* Messages */}
@@ -176,6 +174,24 @@ const ChatSimulation = ({
               </div>
             </div>
           )}
+
+          {/* Action Buttons - No Reply & Timezone */}
+          <div className="flex gap-2 pt-2 border-t border-border/50">
+            <button 
+              onClick={handleNoReplyFollowup}
+              className="flex-1 flex items-center justify-center gap-2 py-2 bg-warning/20 text-warning rounded-lg font-black border border-warning/30 hover:bg-warning/30 transition-all"
+            >
+              <MessageSquareX className="w-4 h-4" />
+              <span className="text-[9px] uppercase">No Reply Follow-up</span>
+            </button>
+            <button 
+              onClick={handleTimezoneAlert}
+              className="flex-1 flex items-center justify-center gap-2 py-2 bg-accent/20 text-accent rounded-lg font-black border border-accent/30 hover:bg-accent/30 transition-all"
+            >
+              <Clock className="w-4 h-4" />
+              <span className="text-[9px] uppercase">Timezone Alert</span>
+            </button>
+          </div>
         </div>
       </div>
 
