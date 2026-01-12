@@ -48,7 +48,7 @@ const IntelligenceAudit = ({
     <div className="sdr-panel flex-none space-y-4">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="sdr-label-accent">01. LIECS Intelligence Audit</h2>
+        <h2 className="sdr-label-accent">01. Lead Intelligence Audit</h2>
         <span className="text-[8px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase border border-primary/20">
           LIECS: {puzzleCount}/5
         </span>
@@ -101,7 +101,7 @@ const IntelligenceAudit = ({
         </div>
       </div>
 
-      {/* Lead Nature - Horizontal */}
+      {/* Entry Type - Horizontal (below contact info) */}
       <div className="space-y-1.5">
         <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Entry Type</p>
         <div className="flex gap-2">
