@@ -19,6 +19,7 @@ const Index = () => {
     getScript,
     getPuzzleCount,
     getGrade,
+    getRecommendedAE,
     generateBriefing
   } = useSDRState();
 
@@ -26,6 +27,7 @@ const Index = () => {
   const script = getScript(dialogue);
   const puzzleCount = getPuzzleCount();
   const grade = getGrade();
+  const recommendedAE = getRecommendedAE();
 
   return (
     <div className="bg-background text-foreground min-h-screen flex flex-col font-sans text-[13px]">
@@ -37,7 +39,7 @@ const Index = () => {
           <IntelligenceAudit
             nature={state.nature}
             customerInfo={state.customerInfo}
-            liecsData={state.liecsData}
+            liecsmgData={state.liecsmgData}
             selectedPuzzle={state.selectedPuzzle}
             puzzleCount={puzzleCount}
             onNatureChange={updateNature}
@@ -63,6 +65,8 @@ const Index = () => {
           puzzleCount={puzzleCount}
           grade={grade}
           generateBriefing={generateBriefing}
+          recommendedAE={recommendedAE}
+          customerLocation={state.liecsmgData.L}
         />
       </main>
     </div>
