@@ -602,4 +602,259 @@ export const BRANCHES: Record<string, ConversationNode> = {
     ]
   },
 
-  // SDR_DATA_EOF
+  // --- OEM Branches ---
+  r2_oem: {
+    thinking: "OEM意向确认：快速判定规模，分流到大单或起步。",
+    script: "Understood — OEM/ODM is a different process from distribution. We support full customization from firmware to packaging. To route you correctly: are you looking at 500+ units/month volume, or starting smaller with a pilot run? Also, do you need head units, car audio, or both?",
+    tag: "CRM: OEM_SCALE_QUALIFY",
+    replies: [
+      { text: "500+ units, head units.", next: "r2_oem_detail" },
+      { text: "200 units pilot, may scale.", next: "r2_oem_starter" },
+      { text: "Just exploring.", next: "r2_oem_explore" },
+      { text: "Car audio OEM only.", next: "r2_oem_audio" }
+    ]
+  },
+
+  r2_oem_detail: {
+    thinking: "OEM大单：Director直转，技术评估。",
+    script: "500+ units qualifies for our Tier-1 OEM program. Our Engineering Director and Sales Director will jointly review your requirements. I'll need: 1) Your company profile, 2) Target SKUs and specs, 3) Timeline to SOP. Michael Wang will personally handle this. May I have your email for the NDA and technical questionnaire?",
+    tag: "CRM: OEM_TIER1_DIRECTOR",
+    replies: [
+      { text: "Email: [Email]. Send NDA.", next: "r4_handover_director" },
+      { text: "Can we talk before NDA?", next: "r4_handover_director" },
+      { text: "What are your OEM capabilities?", next: "r3_oem_nre" }
+    ]
+  },
+
+  r2_oem_starter: {
+    thinking: "OEM起步：推pilot program，降低门槛。",
+    script: "200 units is a great pilot size. We offer a 'Pilot OEM Program' with reduced NRE and 90-day evaluation. If volumes grow beyond 500/month, you automatically upgrade to Tier-1 pricing. Our Regional Manager can walk you through the pilot structure. Shall I connect you?",
+    tag: "CRM: OEM_PILOT_PROGRAM",
+    replies: [
+      { text: "Yes, connect for pilot details.", next: "r4_handover" },
+      { text: "Send pilot program overview.", next: "r4_close" },
+      { text: "What is NRE cost?", next: "r3_oem_nre" }
+    ]
+  },
+
+  r2_oem_explore: {
+    thinking: "OEM探索：推capabilities文档， nurturing。",
+    script: "No problem — many partners start by exploring. TEYES OEM capabilities include: custom Android firmware, white-label UI, CAN bus protocol integration, custom packaging, and global certification support (CE, FCC, E-mark). I can send our OEM Capability Deck. What's your email?",
+    tag: "CRM: OEM_EXPLORE_DECK",
+    replies: [
+      { text: "Email: [Email]. Send deck.", next: "r4_close" },
+      { text: "What certifications do you have?", next: "r3_oem_nre" },
+      { text: "Maybe later.", next: "finish_nurture" }
+    ]
+  },
+
+  r2_oem_audio: {
+    thinking: "车音频OEM：高毛利，专业线。",
+    script: "Car audio OEM is one of our fastest-growing lines. We manufacture DSP amplifiers, active subwoofers, and full speaker kits with your branding. MOQ starts at 300 units for amplifiers, 500 for speaker kits. Our Engineering Director can customize the acoustic profile for your target market. Shall I set up a technical call?",
+    tag: "CRM: OEM_AUDIO_TECH",
+    replies: [
+      { text: "Yes, technical call.", next: "r4_handover_director" },
+      { text: "Send audio OEM catalog.", next: "r4_close" },
+      { text: "What is the MOQ?", next: "r3_oem_moq" }
+    ]
+  },
+
+  r3_oem_nre: {
+    thinking: "NRE解释：模糊处理，引导对话。",
+    script: "NRE depends on customization depth — UI-only changes are minimal; deep firmware or CAN protocol work requires more investment. The good news: NRE is fully credited against your first 12 months of orders. Our Engineering Director can give you a precise quote after reviewing your spec. Shall I connect you?",
+    tag: "CRM: OEM_NRE_CLOSE",
+    replies: [
+      { text: "Yes, connect for NRE quote.", next: "r4_handover_director" },
+      { text: "Send NRE structure document.", next: "r4_close" }
+    ]
+  },
+
+  r3_oem_models: {
+    thinking: "OEM型号：推平台化方案。",
+    script: "We offer OEM on all platforms: CC4 Pro (6nm flagship), CC3 2K (volume), CC4L (entry), and X1 Pro (budget). Most OEM partners choose CC3 2K or CC4L for volume, with CC4 Pro as a premium tier. You can also mix models under one brand. Which platform interests you most?",
+    tag: "CRM: OEM_MODEL_SELECT",
+    replies: [
+      { text: "CC3 2K for volume.", next: "r2_oem_detail" },
+      { text: "CC4 Pro for premium.", next: "r2_oem_detail" },
+      { text: "Mixed lineup.", next: "r2_oem_detail" }
+    ]
+  },
+
+  r3_oem_moq: {
+    thinking: "OEM MOQ：按产品线分层。",
+    script: "OEM MOQ by product line: Head units — 500 units for single model, 300 per model for mixed; Car audio — 300 amplifiers, 500 speaker kits; Full ecosystem bundle — 800 total units with better pricing. These are starting points — the Director can flex for strategic partners. What's your target?",
+    tag: "CRM: OEM_MOQ_CLOSE",
+    replies: [
+      { text: "Target 500 head units.", next: "r2_oem_detail" },
+      { text: "Start with 300 audio.", next: "r2_oem_audio" },
+      { text: "Need flexibility.", next: "r4_handover_director" }
+    ]
+  },
+
+  // ===== FINISH NODES =====
+  finish_retail: {
+    thinking: "零售终结：礼貌拒绝，留品牌印象。",
+    script: "Thanks for your interest! TEYES units are available through our authorized distributors in your region. I can share a retail locator link if you'd like. For bulk or business inquiries, feel free to reach out anytime. Have a great day!",
+    tag: "CRM: FINISH_RETAIL",
+    replies: []
+  },
+
+  finish_support: {
+    thinking: "售后分流：收集信息，转技术支持。",
+    script: "No problem — I'm connecting you with our Technical Support team. They'll need your unit model, car make/year, and a brief description of the issue. Please reply with those details and a support specialist will assist you within 2 hours during business days.",
+    tag: "CRM: FINISH_SUPPORT",
+    replies: []
+  },
+
+  finish_support_tech: {
+    thinking: "技术售后： Firmware/软件问题。",
+    script: "Firmware updates for CC4 Pro are available through our Support Portal. I'll send you the direct download link and step-by-step flashing guide. If you encounter any issues during the update, our tech team can remote-assist via TeamViewer. Please confirm your email for the link.",
+    tag: "CRM: FINISH_SUPPORT_TECH",
+    replies: []
+  },
+
+  finish_support_install: {
+    thinking: "安装售后：物理安装问题。",
+    script: "Installation issues are best handled with visual guidance. I'll send you our CC4 Pro Installation Video Library and the wiring diagram for your specific car model. If the issue persists, we can schedule a video call with our senior installer. What's your email?",
+    tag: "CRM: FINISH_SUPPORT_INSTALL",
+    replies: []
+  },
+
+  finish_nurture: {
+    thinking: "Nurturing：30天后跟进。",
+    script: "Understood — timing is everything. I'll mark your profile for a follow-up in 30 days. In the meantime, I'll send you our quarterly product updates and any promotional pricing that becomes available. If your situation changes sooner, just reply here. What's your email for the updates?",
+    tag: "CRM: FINISH_NURTURE",
+    replies: []
+  },
+
+  // ===== UTILITY / TRANSITION BRANCHES =====
+  r3_a: {
+    thinking: "通用A：需要Email才能发送资料。",
+    script: "I'd be happy to send that over. To ensure it reaches the right person, could you share your business email? I'll CC our Regional Manager so they can follow up directly if you have questions.",
+    tag: "CRM: UTIL_EMAIL_GATE",
+    replies: [
+      { text: "Email: [Email].", next: "r4_close" },
+      { text: "Send here in chat.", next: "r3_b" },
+      { text: "Not comfortable sharing email yet.", next: "r3_c" }
+    ]
+  },
+
+  r3_b: {
+    thinking: "通用B：无法发资料，推对话。",
+    script: "I understand. Rather than documents, let's do a quick 10-minute call — it's often faster and I can answer your specific questions in real time. When works best for you this week?",
+    tag: "CRM: UTIL_CALL_GATE",
+    replies: [
+      { text: "Tuesday 2pm works.", next: "r4_handover" },
+      { text: "Send me your availability.", next: "r4_close" },
+      { text: "I prefer chat for now.", next: "r3_c" }
+    ]
+  },
+
+  r3_c: {
+    thinking: "通用C：坚持不给联系方式，提供价值后 nurturing。",
+    script: "No problem at all. I'll send you a summary of our distributor benefits here in chat. If anything catches your eye, just let me know and we can take it from there. Here are the key points:\\n\\n1. Exclusive territory protection (6-12 months)\\n2. Tiered pricing with volume rebates\\n3. Free sample units for evaluation\\n4. Installer training and certification\\n5. Co-marketing fund matching\\n\\nDoes any of this align with your goals?",
+    tag: "CRM: UTIL_VALUE_NURTURE",
+    replies: [
+      { text: "Territory protection interests me.", next: "r2_regional" },
+      { text: "Sample units — how does that work?", next: "r3_volume_starter" },
+      { text: "Let me think about it.", next: "finish_nurture" }
+    ]
+  },
+
+  r4_close: {
+    thinking: "Close：Email已收，发送资料，设定期望。",
+    script: "Perfect — I've sent the [Document] to [Email]. You should receive it within 5 minutes. Our Regional Manager [AE] will follow up within 24 hours to answer any questions. In the meantime, is there anything specific about [Topic] you'd like me to prioritize for their call?",
+    tag: "CRM: CLOSE_EMAIL_SENT",
+    replies: [
+      { text: "Pricing for my market specifically.", next: "r4_handover" },
+      { text: "Technical specs comparison.", next: "r4_handover" },
+      { text: "Partnership terms.", next: "r4_handover" },
+      { text: "All good, waiting for follow-up.", next: "finish_nurture" }
+    ]
+  },
+
+  r4_handover: {
+    thinking: "Handover：AE接手，介绍联系方式。",
+    script: "Excellent — I'm handing you over to [AE], our Regional Manager for [Region]. [AE] specializes in [Specialty] and will be your direct contact.\\n\\n📧 [AE Email]\\n📱 [AE WhatsApp]\\n\\n[AE] will reach out within 24 hours. If urgent, feel free to WhatsApp directly. Thanks for choosing TEYES!",
+    tag: "CRM: HANDOVER_AE",
+    replies: []
+  },
+
+  r4_handover_director: {
+    thinking: "Director Handover：大客户/Director级别接手。",
+    script: "Flagged for Director priority. Michael Wang, our Sales Director, will personally handle your inquiry.\\n\\n📧 michael.wang@teyesglobal.com\\n📱 +8618612345678\\n\\nMichael typically responds within 4 hours during business days. For urgent matters, WhatsApp is fastest. Welcome to TEYES strategic partnership pipeline!",
+    tag: "CRM: HANDOVER_DIRECTOR",
+    replies: []
+  },
+
+  // --- Upgrade / Misc ---
+  r2_upgrade: {
+    thinking: "升级意向：现有客户升级，高转化。",
+    script: "Great to hear you're looking to upgrade! CC3 2K to CC4 Pro is a popular upgrade path — your installers will love the 6nm speed and DTS audio. We offer trade-in credits for existing TEYES distributors. Our Regional Manager can calculate your exact trade-in value. What's your email for the upgrade quote?",
+    tag: "CRM: UPGRADE_OPPORTUNITY",
+    replies: [
+      { text: "Email: [Email]. Send quote.", next: "r4_handover" },
+      { text: "What's the trade-in value?", next: "r3_a" },
+      { text: "Also need audio upgrade.", next: "r2_audio" }
+    ]
+  },
+
+  r2_tech: {
+    thinking: "技术问题：可能是伪装的技术买家，也可能是零售。",
+    script: "Yes, all TEYES head units run on Android — CC4 Pro and CC3 2K use Android 13, CC4L and X1 Pro use Android 12. They support wireless CarPlay, Android Auto, and full Google Play access. Are you evaluating this for your shop/installation business, or for personal use?",
+    tag: "CRM: TECH_QUALIFY",
+    replies: [
+      { text: "For my shop.", next: "r2_c" },
+      { text: "Personal use.", next: "finish_retail" },
+      { text: "What's the difference between models?", next: "r2_volume" }
+    ]
+  },
+
+  r2_c: {
+    thinking: "通用渠道确认：确认商业身份后推标准流程。",
+    script: "Perfect — as a business customer, you'll get distributor pricing, sample access, and dedicated support. To get started, I need to understand your operation better: 1) How many shops/installers do you have? 2) What's your current monthly volume? 3) Which country/region are you in?",
+    tag: "CRM: CHANNEL_CONFIRM",
+    replies: [
+      { text: "3 shops, 50 units/mo, Mexico.", next: "r2_volume" },
+      { text: "10+ shops, 300 units/mo, Brazil.", next: "r2_partner_vip" },
+      { text: "Online only, 20 units/mo.", next: "r3_volume_entry" },
+      { text: "Just starting.", next: "r3_volume_starter" }
+    ]
+  }
+};
+
+// ===== DETECTION HELPERS =====
+
+export function detectLanguage(text: string): string {
+  const lower = text.toLowerCase();
+  if (/\\b(hola|gracias|distribuidor|precio| pantalla|españa|méxico|argentina|colombia|chile|perú|venezuela|ecuador|bolivia)\\b/.test(lower)) return 'es';
+  if (/\\b(olá|obrigado|distribuidor|preço|tela|brasil|portugal|angola|moçambique)\\b/.test(lower)) return 'pt';
+  if (/\\b(merhaba|teşekkür|distribütör|fiyat|ekran|türkiye|istanbul)\\b/.test(lower)) return 'tr';
+  if (/\\b(здравствуйте|спасибо|дистрибьютор|цена|экран|россия|украина|казахстан|москва)\\b/.test(lower)) return 'ru';
+  return 'en';
+}
+
+export function detectModel(text: string): string {
+  const lower = text.toLowerCase();
+  if (lower.includes('cc4 pro') || lower.includes('cc4pro') || lower.includes('flagship')) return 'CC4 Pro';
+  if (lower.includes('cc3') || lower.includes('cc3 2k') || lower.includes('cc3 2k')) return 'CC3 2K';
+  if (lower.includes('cc4l') || lower.includes('cc4 l')) return 'CC4L';
+  if (lower.includes('x1') || lower.includes('x1 pro')) return 'X1 Pro';
+  if (lower.includes('audio') || lower.includes('amplifier') || lower.includes('dsp') || lower.includes('subwoofer') || lower.includes('speaker')) return 'Car Audio';
+  return '';
+}
+
+export function detectOEMIntent(text: string): boolean {
+  const lower = text.toLowerCase();
+  return /\\b(oem|odm|manufactur|private label|white label|bulk order|custom firmware|custom logo|factory|produce for us|make for us)\\b/.test(lower);
+}
+
+export function detectPartnerIntent(text: string): boolean {
+  const lower = text.toLowerCase();
+  return /\\b(exclusive|exclusivity|territory|region|country|nationwide|sole distributor|master distributor|partnership|agent|representative)\\b/.test(lower);
+}
+
+export function detectSupportIntent(text: string): boolean {
+  const lower = text.toLowerCase();
+  return /\\b(support|help|issue|problem|broken|defect|warranty|repair|install|firmware|update|flash|not working|error|bug|reset)\\b/.test(lower);
+}
