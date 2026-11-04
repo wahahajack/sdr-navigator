@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
-import { NatureType, PuzzleKey, PUZZLE_META } from '@/lib/sdrData';
+import { NatureType, PuzzleKey, PUZZLE_META, detectLanguage, detectModel, detectOEMIntent, detectPartnerIntent, detectSupportIntent } from '@/lib/sdrData';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { CustomerInfo, LIECSData } from '@/hooks/useSDRState';
-import { Mail, MessageCircle } from 'lucide-react';
+import { CustomerInfo, LIECSMGData } from '@/hooks/useSDRState';
+import { Mail, MessageCircle, Globe, Cpu } from 'lucide-react';
 
 interface IntelligenceAuditProps {
   nature: NatureType;
   customerInfo: CustomerInfo;
-  liecsData: LIECSData;
+  liecsmgData: LIECSMGData;
   selectedPuzzle: PuzzleKey | null;
   puzzleCount: number;
   onNatureChange: (nature: NatureType) => void;
@@ -17,27 +17,32 @@ interface IntelligenceAuditProps {
   onSelectPuzzle: (key: PuzzleKey | null) => void;
 }
 
-const NATURE_OPTIONS: { id: NatureType; label: string; grade: string; gradeColor: string }[] = [
-  { id: 'high', label: 'Distributor App', grade: 'A', gradeColor: 'bg-primary text-primary-foreground' },
-  { id: 'interested', label: 'Catalog DL', grade: 'B', gradeColor: 'bg-accent text-accent-foreground' },
-  { id: 'eval', label: 'Direct WA', grade: 'C', gradeColor: 'bg-warning text-warning-foreground' },
-  { id: 'grey', label: 'Fragmented', grade: 'G', gradeColor: 'bg-muted text-muted-foreground' }
+const NATURE_OPTIONS: { id: NatureType; label: string; grade: string; gradeColor: string; icon: string }[] = [
+  { id: 'high', label: 'Distributor App', grade: 'A', gradeColor: 'bg-primary text-primary-foreground', icon: 'A' },
+  { id: 'interested', label: 'Catalog DL', grade: 'B', gradeColor: 'bg-accent text-accent-foreground', icon: 'B' },
+  { id: 'eval', label: 'Direct WA', grade: 'C', gradeColor: 'bg-warning text-warning-foreground', icon: 'C' },
+  { id: 'grey', label: 'Fragmented', grade: 'G', gradeColor: 'bg-muted text-muted-foreground', icon: 'G' },
+  { id: 'oem', label: 'OEM/ODM', grade: 'S', gradeColor: 'bg-destructive text-destructive-foreground', icon: 'S' },
+  { id: 'partner', label: 'Regional Partner', grade: 'A+', gradeColor: 'bg-primary text-primary-foreground', icon: 'A+' },
+  { id: 'support', label: 'Post-Sale', grade: 'C', gradeColor: 'bg-muted text-muted-foreground', icon: 'C' }
 ];
 
-const PUZZLE_KEYS: PuzzleKey[] = ['L', 'I', 'E', 'C', 'S'];
+const PUZZLE_KEYS: PuzzleKey[] = ['L', 'I', 'E', 'C', 'S', 'M', 'G'];
 
 const LIECS_PLACEHOLDERS: Record<PuzzleKey, string> = {
-  L: 'e.g. Brazil, Germany, USA...',
-  I: 'e.g. Distributor, Installer, Retailer...',
+  L: 'e.g. Brazil, Germany, Turkey...',
+  I: 'e.g. Distributor, Installer, OEM...',
   E: 'e.g. 5 years in car electronics...',
   C: 'e.g. Physical shops, Online, Both...',
-  S: 'e.g. Replacing brand, Expanding catalog...'
+  S: 'e.g. Replacing brand, Expanding...',
+  M: 'e.g. CC4 Pro, CC3 2K, Car Audio...',
+  G: 'e.g. EN, ES, PT, TR, RU...'
 };
 
 const IntelligenceAudit = ({
   nature,
   customerInfo,
-  liecsData,
+  liecsmgData,
   selectedPuzzle,
   puzzleCount,
   onNatureChange,
@@ -56,17 +61,62 @@ const IntelligenceAudit = ({
     }
   };
 
-  // Auto-detect entry type based on first message content
+  // Enhanced auto-detect based on first message content
   useEffect(() => {
     const msg = customerInfo.firstMessage.toLowerCase();
-    if (msg.includes('distributor') && msg.includes('application')) {
+    if (!msg) return;
+    
+    // Auto-detect language
+    const detectedLang = detectLanguage(customerInfo.firstMessage);
+    if (detectedLang !== 'en' && !liecsmgData.G) {
+      onLIECSChange('G', detectedLang.toUpperCase());
+    }
+    
+    // Auto-detect model
+    const detectedModel = detectModel(customerInfo.firstMessage);
+    if (detectedModel && !liecsmgData.M) {
+      onLIECSChange('M', detectedModel);
+    }
+    
+    // Auto-detect nature
+    if (detectSupportIntent(customerInfo.firstMessage) && (msg.includes('bought') || msg.includes('purchased') || msg.includes('my unit') || msg.includes('firmware') || msg.includes('update') || msg.includes('install') || msg.includes('problem'))) {
+      onNatureChange('support');
+    } else if (detectOEMIntent(customerInfo.firstMessage)) {
+      onNatureChange('oem');
+    } else if (detectPartnerIntent(customerInfo.firstMessage)) {
+      onNatureChange('partner');
+    } else if (msg.includes('distributor') && msg.includes('application')) {
       onNatureChange('high');
     } else if (msg.includes('download') && msg.includes('catalog')) {
       onNatureChange('interested');
-    } else if (msg.includes('interest')) {
+    } else if (msg.includes('interest') || msg.includes('price') || msg.includes('cost') || msg.includes('pantalla') || msg.includes('fiyat') || msg.includes('цена')) {
       onNatureChange('eval');
     }
-  }, [customerInfo.firstMessage, onNatureChange]);
+  }, [customerInfo.firstMessage]);
+
+  // Auto-extract location from message
+  useEffect(() => {
+    if (liecsmgData.L) return;
+    const msg = customerInfo.firstMessage;
+    const locationMatches = [
+      'Turkey', 'Russia', 'Brazil', 'Mexico', 'Spain', 'Germany', 'France', 'Italy', 'UK', 'USA', 'Canada',
+      'Colombia', 'Argentina', 'Chile', 'Peru', 'Venezuela', 'Ecuador', 'Bolivia', 'Uruguay', 'Paraguay',
+      'Portugal', 'Ukraine', 'Kazakhstan', 'Uzbekistan', 'Georgia', 'Azerbaijan', 'Belarus',
+      'Saudi Arabia', 'UAE', 'Kuwait', 'Iraq', 'Jordan', 'Egypt', 'Morocco', 'Algeria', 'Tunisia',
+      'Nigeria', 'Kenya', 'South Africa', 'Ghana', 'Togo', 'Indonesia', 'Malaysia', 'Thailand',
+      'Philippines', 'Vietnam', 'Singapore', 'Poland', 'Netherlands', 'Belgium', 'Sweden', 'Norway',
+      'Denmark', 'Finland', 'Czech Republic', 'Hungary', 'Romania', 'Greece', 'Croatia', 'Serbia',
+      'Bulgaria', 'Slovenia', 'Latvia', 'Lithuania', 'Estonia', 'Ireland', 'Switzerland', 'Austria'
+    ];
+    
+    for (const loc of locationMatches) {
+      const regex = new RegExp(`\\b${loc}\\b`, 'i');
+      if (regex.test(msg)) {
+        onLIECSChange('L', loc);
+        break;
+      }
+    }
+  }, [customerInfo.firstMessage, liecsmgData.L]);
 
   return (
     <div className="sdr-panel flex-none space-y-4">
@@ -74,9 +124,40 @@ const IntelligenceAudit = ({
       <div className="flex justify-between items-center">
         <h2 className="sdr-label-accent">01. Lead Intelligence Audit</h2>
         <span className="text-[8px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase border border-primary/20">
-          LIECS: {puzzleCount}/5
+          LIECS-LM: {puzzleCount}/7
         </span>
       </div>
+
+      {/* Auto-Detection Banner */}
+      {(detectLanguage(customerInfo.firstMessage) !== 'en' || detectModel(customerInfo.firstMessage) || detectOEMIntent(customerInfo.firstMessage)) && customerInfo.firstMessage && (
+        <div className="p-2 bg-accent/10 border border-accent/20 rounded-lg space-y-1">
+          <p className="text-[8px] font-black text-accent uppercase tracking-widest">Auto-Detected Signals</p>
+          <div className="flex flex-wrap gap-1">
+            {detectLanguage(customerInfo.firstMessage) !== 'en' && (
+              <span className="text-[8px] px-1.5 py-0.5 bg-accent/20 text-accent rounded font-bold uppercase">
+                <Globe className="w-3 h-3 inline mr-1" />
+                Lang: {detectLanguage(customerInfo.firstMessage).toUpperCase()}
+              </span>
+            )}
+            {detectModel(customerInfo.firstMessage) && (
+              <span className="text-[8px] px-1.5 py-0.5 bg-primary/20 text-primary rounded font-bold uppercase">
+                <Cpu className="w-3 h-3 inline mr-1" />
+                Model: {detectModel(customerInfo.firstMessage)}
+              </span>
+            )}
+            {detectOEMIntent(customerInfo.firstMessage) && (
+              <span className="text-[8px] px-1.5 py-0.5 bg-destructive/20 text-destructive rounded font-bold uppercase">
+                OEM Intent Detected
+              </span>
+            )}
+            {detectPartnerIntent(customerInfo.firstMessage) && (
+              <span className="text-[8px] px-1.5 py-0.5 bg-primary/20 text-primary rounded font-bold uppercase">
+                Partner Intent Detected
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Basic Contact Info - 4 columns */}
       <div className="space-y-1.5">
@@ -165,12 +246,12 @@ const IntelligenceAudit = ({
         />
       </div>
 
-      {/* LIECS Puzzle Tiles with Input Fields */}
+      {/* LIECS-LM Puzzle Tiles with Input Fields */}
       <div className="space-y-1.5">
-        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">LIECS Qualification</p>
-        <div className="grid grid-cols-5 gap-2">
+        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">LIECS-LM Qualification (7 Dimensions)</p>
+        <div className="grid grid-cols-7 gap-2">
           {PUZZLE_KEYS.map((key) => {
-            const isFilled = liecsData[key].trim() !== '';
+            const isFilled = liecsmgData[key].trim() !== '';
             const isSelected = selectedPuzzle === key;
             
             return (
@@ -190,7 +271,7 @@ const IntelligenceAudit = ({
                 </div>
                 <Input
                   type="text"
-                  value={liecsData[key]}
+                  value={liecsmgData[key]}
                   onChange={(e) => {
                     e.stopPropagation();
                     onLIECSChange(key, e.target.value);
@@ -231,13 +312,13 @@ const IntelligenceAudit = ({
 
       {/* Entry Type - Horizontal (below LIECS) */}
       <div className="space-y-1.5">
-        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Entry Type</p>
-        <div className="flex gap-2">
+        <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Entry Type (Nature)</p>
+        <div className="flex gap-2 flex-wrap">
           {NATURE_OPTIONS.map((option) => (
             <button
               key={option.id}
               onClick={() => onNatureChange(option.id)}
-              className={`flex-1 py-1.5 px-2 rounded-lg border-2 transition-all text-center ${
+              className={`flex-1 min-w-[80px] py-1.5 px-2 rounded-lg border-2 transition-all text-center ${
                 nature === option.id 
                   ? 'border-primary bg-primary/10' 
                   : 'border-border hover:border-accent/50'
