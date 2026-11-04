@@ -162,7 +162,7 @@ export const REGION_LANGUAGE_MAP: Record<string, { primary: string; fallback: st
   "Georgia": { primary: "ru", fallback: "en", ae: "Sarah" },
   "Azerbaijan": { primary: "tr", fallback: "ru", ae: "Sarah" },
   "Belarus": { primary: "ru", fallback: "en", ae: "Sarah" },
-  // Middle East & Africa (English primary, but Arabic markets can use English)
+  // Middle East & Africa (English primary)
   "Saudi Arabia": { primary: "en", fallback: "en", ae: "Leo" },
   "UAE": { primary: "en", fallback: "en", ae: "Leo" },
   "Kuwait": { primary: "en", fallback: "en", ae: "Leo" },
@@ -375,4 +375,231 @@ export const CONVERSATION_TREES: Record<NatureType, { r1: ConversationNode }> = 
   }
 };
 
-// SDR_DATA_EOF
+// ===== BRANCHES =====
+export const BRANCHES: Record<string, ConversationNode> = {
+  // --- Flagship Branch (CC4 Pro / High-end) ---
+  r2_flagship: {
+    thinking: "旗舰型搜索者：高意向，高预算，推AE直转。强调6nm+12TOPS+DTS差异化。",
+    script: "Excellent choice. CC4 Pro is our 6nm flagship with 12TOPS NPU and DTS-certified audio — it's the highest-margin tier for professional installers. Since you have a professional network, I'd like to introduce our Regional Manager to discuss exclusive protection and flagship tier pricing. May I have your email to coordinate the info pack?",
+    tag: "CRM: FLAGSHIP_AE_PREP",
+    replies: [
+      { text: "Email: [User Email]. Connect manager.", next: "r4_handover" },
+      { text: "What's the MOQ for CC4 Pro?", next: "r3_flagship_moq" },
+      { text: "How does it compare to [Competitor]?", next: "r3_flagship_compare" },
+      { text: "Send prices here first.", next: "r3_a" }
+    ]
+  },
+
+  r3_flagship_moq: {
+    thinking: "旗舰MOQ问答：不给具体数字，锁定诚意后转AE。",
+    script: "CC4 Pro flagship tier starts at distributor-level volume. The exact MOQ depends on your region's exclusivity level and whether you're mixing models. Our Regional Manager can lock the best structure for you. What's your email so I can send the tiered pricing matrix?",
+    tag: "CRM: FLAGSHIP_MOQ_LOCK",
+    replies: [
+      { text: "Email: [Email]. Send it.", next: "r4_handover" },
+      { text: "MOQ only, no email yet.", next: "r3_a" },
+      { text: "I'll start with CC3 2K instead.", next: "r2_volume" }
+    ]
+  },
+
+  r3_flagship_compare: {
+    thinking: "竞品对比：用6nm+NPU+DTS三轴打击，不贬低对手，强调技术代差。",
+    script: "Fair question. CC4 Pro runs on a 6nm process with dedicated 12TOPS NPU for AI voice and camera processing — most competitors are still on 12nm without NPU. Plus DTS audio certification is rare in this price bracket. Rather than spec sheets, would a 15-minute technical demo with our Regional Manager be more useful?",
+    tag: "CRM: FLAGSHIP_COMPARE_DEMO",
+    replies: [
+      { text: "Yes, schedule a demo.", next: "r4_handover" },
+      { text: "Send comparison sheet first.", next: "r3_a" },
+      { text: "What about warranty?", next: "r3_flagship_warranty" }
+    ]
+  },
+
+  r3_flagship_warranty: {
+    thinking: "质保问答：3年质保是杀手锏，强调信心。",
+    script: "CC4 Pro carries a 3-year warranty — that's double the industry standard. It reflects our confidence in the 6nm thermal design and component quality. For distributor partners, we also offer advance replacement units to keep your customers' downtime minimal. Shall I connect you with our Regional Manager to include this in your agreement?",
+    tag: "CRM: FLAGSHIP_WARRANTY_CLOSE",
+    replies: [
+      { text: "Yes, connect me.", next: "r4_handover" },
+      { text: "Send warranty terms by email.", next: "r4_close" }
+    ]
+  },
+
+  // --- Volume Branch (CC3 2K / CC4L / Mixed) ---
+  r2_volume: {
+    thinking: "成本敏感型：推三档对比，引导从CC4L/CC3 2K起步，留升级路径。",
+    script: "I understand. We have three tiers to match different market positions: CC4 Pro (6nm flagship, 35-45% margin), CC3 2K (volume leader, 25-35% margin), and CC4L (entry QLED, 20-28% margin). Most new distributors start with CC3 2K for volume, then upgrade to CC4 Pro for premium clients. What monthly volume are you projecting?",
+    tag: "CRM: VOLUME_TIERING",
+    replies: [
+      { text: "Around 100 units, starting with CC3 2K.", next: "r3_volume_starter" },
+      { text: "High volume (>500), mixed tiers.", next: "r2_flagship" },
+      { text: "Just starting out, maybe CC4L.", next: "r3_volume_entry" },
+      { text: "Send wholesale catalog first.", next: "r3_a" }
+    ]
+  },
+
+  r3_volume_starter: {
+    thinking: "100台起步：推Sample Package+评估表， nurturing路径。",
+    script: "100 units is a solid start. I recommend beginning with a Sample Package — one CC4 Pro, one CC3 2K, and one CC4L — so you can test all three tiers with your local market. Once you confirm which sells best, we lock your wholesale tier. Shall I send the sample ordering guide to your email?",
+    tag: "CRM: VOLUME_SAMPLE_PACKAGE",
+    replies: [
+      { text: "Yes, email it.", next: "r4_close" },
+      { text: "Maybe next month.", next: "finish_nurture" },
+      { text: "How much for sample?", next: "r4_close" },
+      { text: "Skip sample, send price list.", next: "r3_a" }
+    ]
+  },
+
+  r3_volume_entry: {
+    thinking: "入门型：CC4L推新市场测试，低风险高复购。",
+    script: "CC4L is perfect for testing a new market — entry-level QLED with full CarPlay/Android Auto at a price point that moves fast. Many distributors use CC4L to build their installer network, then upsell to CC3 2K and CC4 Pro. Would you like the CC4L distributor price sheet and a sample unit quote?",
+    tag: "CRM: VOLUME_ENTRY_PATH",
+    replies: [
+      { text: "Yes, send CC4L prices.", next: "r4_close" },
+      { text: "What about X1 Pro?", next: "r3_volume_x1" },
+      { text: "Maybe next month.", next: "finish_nurture" }
+    ]
+  },
+
+  r3_volume_x1: {
+    thinking: "X1 Pro是价格敏感市场的底线选项，但利润率较低，引导向上。",
+    script: "X1 Pro is our budget tier with reliable wired CarPlay — good for markets where price is the primary driver. However, CC4L is only slightly higher in cost but offers QLED + wireless CarPlay, which most customers prefer. For distributors, CC4L typically yields 5-8 points better margin. Would you like to compare both?",
+    tag: "CRM: VOLUME_X1_VS_CC4L",
+    replies: [
+      { text: "Send comparison, leaning CC4L.", next: "r4_close" },
+      { text: "X1 Pro price sheet only.", next: "r4_close" },
+      { text: "Not interested.", next: "finish_nurture" }
+    ]
+  },
+
+  // --- Car Audio Branch ---
+  r2_audio: {
+    thinking: "车音频流量：高毛利（40-60%），但需确认渠道匹配。可能是现有分销商增购或新渠道。",
+    script: "Great focus — our Car Audio line (amplifiers, DSP, subwoofers, speaker kits) delivers 40-60% margins and pairs perfectly with head unit sales. Many installers double their per-job revenue by bundling TEYES audio with our screens. Are you currently selling car audio, or looking to add it to your existing catalog?",
+    tag: "CRM: AUDIO_QUALIFY",
+    replies: [
+      { text: "Already selling audio, want TEYES.", next: "r3_audio_pro" },
+      { text: "New to audio, currently only screens.", next: "r3_audio_bundle" },
+      { text: "Looking for OEM audio manufacturing.", next: "r2_oem_audio" },
+      { text: "Send audio catalog.", next: "r3_a" }
+    ]
+  },
+
+  r3_audio_pro: {
+    thinking: "现有音频卖家：推专业级DSP+功放组合，强调技术差异。",
+    script: "Perfect — you understand the audio market. TEYES DSP amplifiers support 31-band EQ, active crossover, and time alignment. They're designed to integrate seamlessly with our head units via CAN bus. Our Regional Manager can send you the technical specs and distributor pricing. What's your email?",
+    tag: "CRM: AUDIO_PRO_HANDOVER",
+    replies: [
+      { text: "Email: [Email]. Send specs.", next: "r4_handover" },
+      { text: "What's the MOQ for amplifiers?", next: "r3_audio_moq" },
+      { text: "Do you have sample units?", next: "r3_b" }
+    ]
+  },
+
+  r3_audio_bundle: {
+    thinking: "屏幕卖家增购音频：推bundle策略，提升客单价。",
+    script: "Smart move — bundling audio with head units is where the real margin lives. We offer 'Screen + Audio' distributor packages with co-marketing materials. Most shops see a 40% increase in average ticket size. Would you like the bundle pricing and a sample DSP kit to test with your installers?",
+    tag: "CRM: AUDIO_BUNDLE_PROMO",
+    replies: [
+      { text: "Yes, send bundle pricing.", next: "r4_close" },
+      { text: "Sample DSP kit first.", next: "r3_b" },
+      { text: "Maybe next quarter.", next: "finish_nurture" }
+    ]
+  },
+
+  r3_audio_moq: {
+    thinking: "音频MOQ：较低门槛，快速转化。",
+    script: "Audio MOQ is quite friendly — DSP amplifiers start at 50 units, speaker kits at 100 units. Compared to head units, it's lower risk and faster turnover. Our Regional Manager can structure a mixed MOQ if you want to combine audio with screens. Shall I connect you?",
+    tag: "CRM: AUDIO_MOQ_CLOSE",
+    replies: [
+      { text: "Yes, connect for mixed MOQ.", next: "r4_handover" },
+      { text: "Send MOQ sheet by email.", next: "r4_close" }
+    ]
+  },
+
+  // --- Regional / Exclusivity Branch ---
+  r2_regional: {
+    thinking: "区域保护型：高价值，检测排他性意愿，直转Director或大区经理。",
+    script: "Regional protection is one of our strongest programs. For committed partners with proven channels, we offer 6–12 month territory exclusivity. To evaluate your eligibility, our Sales Director needs to review your current volume and shop network. May I have your email to schedule a 20-minute exclusivity assessment?",
+    tag: "CRM: REGIONAL_EXCLUSIVITY",
+    replies: [
+      { text: "Email: [Email]. Schedule assessment.", next: "r4_handover_director" },
+      { text: "What are the requirements?", next: "r3_regional_req" },
+      { text: "Not ready for exclusivity yet.", next: "r2_volume" }
+    ]
+  },
+
+  r3_regional_req: {
+    thinking: "排他性要求：不透露底线，引导对话。",
+    script: "Requirements vary by region size and market maturity. Generally we look for: 1) Proven monthly volume (varies by country), 2) Active installer/shops network, 3) Marketing commitment, 4) No direct competing brand exclusivity. Rather than generic numbers, our Director prefers to assess your specific situation. What's your email for the assessment call?",
+    tag: "CRM: REGIONAL_REQ_CLOSE",
+    replies: [
+      { text: "Email: [Email]. Book it.", next: "r4_handover_director" },
+      { text: "Send requirements document.", next: "r4_close" },
+      { text: "Too early for us.", next: "finish_nurture" }
+    ]
+  },
+
+  // --- Partner VIP Branch ---
+  r2_partner_vip: {
+    thinking: "顶级合作伙伴：直接Director，强调战略价值。",
+    script: "Impressive numbers — 500+ units with 15 shops puts you in our top-tier partner category. I'm flagging this for immediate Director attention. Michael Wang, our Sales Director, personally handles partnerships at your scale. He'll review your profile within 24 hours. May I have your email for the introduction?",
+    tag: "CRM: PARTNER_VIP_DIRECTOR",
+    replies: [
+      { text: "Email: [Email]. Looking forward.", next: "r4_handover_director" },
+      { text: "Can we talk sooner?", next: "r4_handover_director" },
+      { text: "Send partnership terms first.", next: "r4_close" }
+    ]
+  },
+
+  r2_partner_growth: {
+    thinking: "成长型伙伴：推tiered partnership，有升级路径。",
+    script: "100 units with a growing network is exactly how most of our top partners started. We have a tiered partnership program: Starter (50-150/mo), Growth (150-400/mo), and Premier (400+/mo) with increasing exclusivity and marketing support. You're in the Growth tier. Shall I send the tier details and a sample agreement?",
+    tag: "CRM: PARTNER_GROWTH_TIER",
+    replies: [
+      { text: "Yes, send tier details.", next: "r4_close" },
+      { text: "Schedule call to discuss.", next: "r4_handover" },
+      { text: "What marketing support?", next: "r3_partner_marketing" }
+    ]
+  },
+
+  r2_partner_switch: {
+    thinking: "品牌切换者：最脆弱的时机，推差异化+迁移支持。",
+    script: "Switching from [Brand] is a big decision — and often the right one. TEYES offers migration support: we'll match your current product lineup with our equivalents, provide installer training videos, and even co-fund your first local marketing campaign. Our Regional Manager specializes in partner transitions. Can we schedule a 30-minute migration plan call?",
+    tag: "CRM: PARTNER_SWITCH_MIGRATE",
+    replies: [
+      { text: "Yes, schedule migration call.", next: "r4_handover" },
+      { text: "Send migration support details.", next: "r4_close" },
+      { text: "Need to think about it.", next: "finish_nurture" }
+    ]
+  },
+
+  r2_partner_exclusive: {
+    thinking: "国家级排他性：最高价值，Director直接处理。",
+    script: "Country-level exclusivity is available for partners who can commit to significant volume and marketing investment. This is personally approved by our Sales Director. He'll need to review your business plan, financials, and market strategy. Shall I set up a confidential call with Michael Wang?",
+    tag: "CRM: PARTNER_EXCLUSIVE_DIRECTOR",
+    replies: [
+      { text: "Yes, confidential call please.", next: "r4_handover_director" },
+      { text: "Send exclusivity framework first.", next: "r4_close" },
+      { text: "What volume is required?", next: "r3_partner_volume" }
+    ]
+  },
+
+  r3_partner_marketing: {
+    thinking: "营销支持：具体化支持内容，增强吸引力。",
+    script: "Marketing support includes: co-branded POS materials, localized video ads, social media content kits, installer training webinars, and joint trade show participation. Premier partners also get access to our 'TEYES Certified Installer' program — a powerful customer trust signal. Full details are in the partnership pack I'm sending. Email?",
+    tag: "CRM: PARTNER_MARKETING_CLOSE",
+    replies: [
+      { text: "Email: [Email]. Send pack.", next: "r4_close" },
+      { text: "Schedule call instead.", next: "r4_handover" }
+    ]
+  },
+
+  r3_partner_volume: {
+    thinking: "排他性体积要求：不给具体数字，引导对话。",
+    script: "Volume requirements depend on country population, car ownership rates, and your existing network density. What I can say is that our current exclusive partners average 800+ units/month after the first year. The Director will model this specifically for your market. Shall I book the assessment?",
+    tag: "CRM: PARTNER_VOLUME_CLOSE",
+    replies: [
+      { text: "Book assessment.", next: "r4_handover_director" },
+      { text: "Send framework first.", next: "r4_close" }
+    ]
+  },
+
+  // SDR_DATA_EOF
