@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ConversationNode, SPECIAL_SCRIPTS, Reply } from '@/lib/sdrData';
+import { ConversationNode, SPECIAL_SCRIPTS, Reply, getLocalizedScript } from '@/lib/sdrData';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Clock, MessageSquareX } from 'lucide-react';
+import { Clock, MessageSquareX, Globe, RefreshCw } from 'lucide-react';
 
 interface ChatSimulationProps {
   round: number;
@@ -24,14 +24,15 @@ const ChatSimulation = ({
   onConfirm
 }: ChatSimulationProps) => {
   const [customResponse, setCustomResponse] = useState('');
+  const [selectedLang, setSelectedLang] = useState('en');
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard');
   };
 
-  const copySpecial = (type: string) => {
-    const text = SPECIAL_SCRIPTS[type]?.replace('[Name]', '[Customer Name]') || '';
+  const copySpecial = (type: string, country: string = '') => {
+    const text = getLocalizedScript(type, country || 'default').replace('[Name]', '[Customer Name]').replace('[AE]', '[AE Name]').replace('[Region]', '[Region]');
     copyToClipboard(text);
   };
 
@@ -56,17 +57,17 @@ const ChatSimulation = ({
   };
 
   const handleNoReplyFollowup = () => {
-    const text = SPECIAL_SCRIPTS['No Response']?.replace('[Name]', '[Customer Name]') || '';
+    const text = (SPECIAL_SCRIPTS['No Response'] as Record<string, string>)?.[selectedLang]?.replace('[Name]', '[Customer Name]').replace('[Region]', '[Region]') || '';
     copyToClipboard(text);
-    onAddHistory(`[SDR - No Reply Follow-up]: ${text}`);
-    toast.success('No Reply Follow-up script copied & logged');
+    onAddHistory(`[SDR - No Reply Follow-up (${selectedLang.toUpperCase()})]: ${text}`);
+    toast.success(`No Reply Follow-up script copied & logged [${selectedLang.toUpperCase()}]`);
   };
 
   const handleTimezoneAlert = () => {
-    const text = SPECIAL_SCRIPTS['Timezone']?.replace('[Name]', '[Customer Name]') || '';
+    const text = (SPECIAL_SCRIPTS['Timezone'] as Record<string, string>)?.[selectedLang]?.replace('[Name]', '[Customer Name]').replace('[AE]', '[AE Name]').replace('[Region]', '[Region]') || '';
     copyToClipboard(text);
-    onAddHistory(`[SDR - Timezone Alert]: ${text}`);
-    toast.info('⏰ Timezone Alert: Reminder set - follow up when AE is online');
+    onAddHistory(`[SDR - Timezone Alert (${selectedLang.toUpperCase()})]: ${text}`);
+    toast.info(`⏰ Timezone Alert (${selectedLang.toUpperCase()}): Reminder set - follow up when AE is online`);
   };
 
   const roundDots = Array(4).fill(null).map((_, i) => (
@@ -104,6 +105,27 @@ const ChatSimulation = ({
           <p className="text-[11px] text-foreground font-medium italic">
             {dialogue?.thinking}
           </p>
+        </div>
+
+        {/* Language Selector for Special Scripts */}
+        <div className="px-3 py-1.5 bg-muted/10 border-b border-border flex items-center gap-2">
+          <Globe className="w-3 h-3 text-muted-foreground" />
+          <span className="text-[7px] font-bold text-muted-foreground uppercase">Special Script Lang:</span>
+          <div className="flex gap-1">
+            {['en', 'es', 'pt', 'tr', 'ru'].map(lang => (
+              <button
+                key={lang}
+                onClick={() => setSelectedLang(lang)}
+                className={`text-[7px] px-1.5 py-0.5 rounded font-black uppercase transition-all ${
+                  selectedLang === lang 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted/20 text-muted-foreground hover:bg-muted/40'
+                }`}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Messages */}
@@ -182,14 +204,42 @@ const ChatSimulation = ({
               className="flex-1 flex items-center justify-center gap-2 py-2 bg-warning/20 text-warning rounded-lg font-black border border-warning/30 hover:bg-warning/30 transition-all"
             >
               <MessageSquareX className="w-4 h-4" />
-              <span className="text-[9px] uppercase">No Reply Follow-up</span>
+              <span className="text-[9px] uppercase">No Reply [{selectedLang.toUpperCase()}]</span>
             </button>
             <button 
               onClick={handleTimezoneAlert}
               className="flex-1 flex items-center justify-center gap-2 py-2 bg-accent/20 text-accent rounded-lg font-black border border-accent/30 hover:bg-accent/30 transition-all"
             >
               <Clock className="w-4 h-4" />
-              <span className="text-[9px] uppercase">Timezone Alert</span>
+              <span className="text-[9px] uppercase">Timezone [{selectedLang.toUpperCase()}]</span>
+            </button>
+          </div>
+
+          {/* Additional Special Scripts */}
+          <div className="flex gap-2 pt-1">
+            <button 
+              onClick={() => {
+                const text = (SPECIAL_SCRIPTS['Sample Follow-up'] as Record<string, string>)?.[selectedLang]?.replace('[Name]', '[Customer Name]') || '';
+                copyToClipboard(text);
+                onAddHistory(`[SDR - Sample Follow-up (${selectedLang.toUpperCase()})]: ${text}`);
+                toast.success('Sample follow-up copied');
+              }}
+              className="flex-1 flex items-center justify-center gap-2 py-2 bg-primary/10 text-primary rounded-lg font-black border border-primary/20 hover:bg-primary/20 transition-all"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span className="text-[8px] uppercase">Sample F/U</span>
+            </button>
+            <button 
+              onClick={() => {
+                const text = (SPECIAL_SCRIPTS['OEM Follow-up'] as Record<string, string>)?.[selectedLang]?.replace('[Name]', '[Customer Name]').replace('[Model]', '[Model]').replace('[MOQ]', '[MOQ]').replace('[LeadTime]', '[LeadTime]') || '';
+                copyToClipboard(text);
+                onAddHistory(`[SDR - OEM Follow-up (${selectedLang.toUpperCase()})]: ${text}`);
+                toast.success('OEM follow-up copied');
+              }}
+              className="flex-1 flex items-center justify-center gap-2 py-2 bg-destructive/10 text-destructive rounded-lg font-black border border-destructive/20 hover:bg-destructive/20 transition-all"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span className="text-[8px] uppercase">OEM F/U</span>
             </button>
           </div>
         </div>

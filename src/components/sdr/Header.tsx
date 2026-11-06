@@ -8,18 +8,25 @@ const Header = () => {
           </div>
           <div>
             <h1 className="text-md font-bold tracking-tight uppercase tracking-widest text-header-foreground">
-              Google Ads <span className="text-primary font-black tracking-tighter">SDR</span> Global Command V6.0
+              Google Ads <span className="text-primary font-black tracking-tighter">SDR</span> Global Command V7.0
             </h1>
+            <p className="text-[8px] text-muted-foreground font-bold tracking-wider">
+              LIECS-LM Framework | 7 Dimensions | Multi-Language | Model-Aware
+            </p>
           </div>
         </div>
         <div className="hidden lg:flex space-x-6 text-[9px] text-muted uppercase tracking-widest font-bold items-center">
           <div className="flex items-center space-x-2 border-r border-muted/30 pr-4">
             <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
-            <span className="text-muted">Funnel Mapping</span>
+            <span className="text-muted">Intent Mapping</span>
+          </div>
+          <div className="flex items-center space-x-2 border-r border-muted/30 pr-4">
+            <span className="w-1.5 h-1.5 bg-accent rounded-full"></span>
+            <span className="text-muted">Language Detection</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="w-1.5 h-1.5 bg-accent rounded-full"></span>
-            <span className="text-muted">CRM Auto-Sync Ready</span>
+            <span className="w-1.5 h-1.5 bg-warning rounded-full"></span>
+            <span className="text-muted">Model Routing</span>
           </div>
         </div>
       </div>
